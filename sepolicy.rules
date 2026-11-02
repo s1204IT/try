@@ -1,0 +1,6 @@
+allow sn media_rw_data_file:dir search
+allow init mnt_media_rw_file:dir mounton
+allow mediaserver system_prop:property_service set
+allow mediaserver debug_prop:property_service set
+allow pq debug_prop:property_service set
+allow system_server wifi_log_prop:property_service set
