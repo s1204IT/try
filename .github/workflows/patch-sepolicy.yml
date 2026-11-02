@@ -15,12 +15,11 @@ jobs:
           echo "lib=$LIB"
           gcc -O2 -std=gnu11 spi_patched.c -o sepolicy-inject "$LIB"
           cp sepolicy base.sepolicy
-          ./sepolicy-inject -s sn -t media_rw_data_file -c dir -p "search" -P base.sepolicy -o o1
-          ./sepolicy-inject -s init -t mnt_media_rw_file -c dir -p mounton -P o1 -o o2
-          ./sepolicy-inject -s mediaserver -t system_prop -c property_service -p set -P o2 -o o3
-          ./sepolicy-inject -s mediaserver -t debug_prop -c property_service -p set -P o3 -o o4
-          ./sepolicy-inject -s pq -t debug_prop -c property_service -p set -P o4 -o o5
-          ./sepolicy-inject -s system_server -t wifi_log_prop -c property_service -p set -P o5 -o sepolicy.new
+          ./sepolicy-inject -s priv_app -t device -c dir -p read -P base.sepolicy -o o1
+          ./sepolicy-inject -s priv_app -t sw_sync_device -c chr_file -p getattr -P o1 -o o2
+          ./sepolicy-inject -s priv_app -t debugfs -c file -p read -P o2 -o o3
+          ./sepolicy-inject -s priv_app -t debugfs -c dir -p read -P o3 -o o4
+          ./sepolicy-inject -s adbd -t security_file -c dir -p search -P o4 -o sepolicy.new
           ls -l sepolicy.new
       - uses: actions/upload-artifact@v4
         with:
