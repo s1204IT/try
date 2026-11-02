@@ -9,6 +9,8 @@ jobs:
   patch:
     runs-on: ubuntu-latest
     container: ubuntu:20.04
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: build tool
@@ -17,7 +19,8 @@ jobs:
           apt-get install -y git build-essential libsepol-dev ca-certificates
           git clone https://github.com/phhusson/sepolicy-inject.git
           cd sepolicy-inject
-          make
+          set -o pipefail
+          make 2>&1 | tee build.log
       - name: patch
         run: |
           cd sepolicy-inject
@@ -33,3 +36,13 @@ jobs:
         with:
           name: sepolicy-patched
           path: sepolicy-inject/sepolicy.new
+      - name: commit result
+        if: always()
+        run: |
+          cp sepolicy-inject/build.log build.log || true
+          cp sepolicy-inject/sepolicy.new sepolicy.new || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add build.log sepolicy.new || true
+          git commit -m "result: sepolicy patch" || true
+          git push || true
