@@ -8,9 +8,7 @@ on:
 jobs:
   patch:
     runs-on: ubuntu-latest
-    container: ubuntu:20.04
-    permissions:
-      contents: write
+    container: ubuntu:18.04
     steps:
       - uses: actions/checkout@v4
       - name: build tool
@@ -19,38 +17,23 @@ jobs:
           apt-get install -y git build-essential libsepol-dev ca-certificates
           git clone https://github.com/phhusson/sepolicy-inject.git
           cd sepolicy-inject
-          make 2>&1 | tee build.log
+          make > build.log 2>&1 || { cat build.log; exit 1; }
       - name: patch
         run: |
           cd sepolicy-inject
           cp ../sepolicy ./sepolicy
-          exec 2>&1 | tee patch.log
-          ./sepolicy-inject -s sn -t media_rw_data_file -c dir -p "read open search" -P sepolicy -o o1
-          ./sepolicy-inject -s init -t mnt_media_rw_file -c dir -p mounton -P o1 -o o2
-          ./sepolicy-inject -s mediaserver -t system_prop -c property_service -p set -P o2 -o o3
-          ./sepolicy-inject -s mediaserver -t debug_prop -c property_service -p set -P o3 -o o4
-          ./sepolicy-inject -s pq -t debug_prop -c property_service -p set -P o4 -o o5
-          ./sepolicy-inject -s system_server -t wifi_log_prop -c property_service -p set -P o5 -o sepolicy.new
+          ./sepolicy-inject -s sn -t media_rw_data_file -c dir -p "read open search" -P sepolicy -o o1 > patch.log 2>&1
+          ./sepolicy-inject -s init -t mnt_media_rw_file -c dir -p mounton -P o1 -o o2 >> patch.log 2>&1
+          ./sepolicy-inject -s mediaserver -t system_prop -c property_service -p set -P o2 -o o3 >> patch.log 2>&1
+          ./sepolicy-inject -s mediaserver -t debug_prop -c property_service -p set -P o3 -o o4 >> patch.log 2>&1
+          ./sepolicy-inject -s pq -t debug_prop -c property_service -p set -P o4 -o o5 >> patch.log 2>&1
+          ./sepolicy-inject -s system_server -t wifi_log_prop -c property_service -p set -P o5 -o sepolicy.new >> patch.log 2>&1
           ls -l sepolicy.new
-      - name: commit result
+      - uses: actions/upload-artifact@v4
         if: always()
-        run: |
-          cp sepolicy-inject/build.log build.log || true
-          cp sepolicy-inject/sepolicy.new sepolicy.new || true
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add build.log sepolicy.new || true
-          git commit -m "result: sepolicy patch" || true
-          git push || true
-      - name: push result branch
-        if: always()
-        run: |
-          git config user.name "ci"
-          git config user.email "ci@localhost"
-          git checkout -b ci-result || git checkout ci-result
-          cp sepolicy-inject/patch.log patch.log || true
-          cp sepolicy-inject/build.log build.log || true
-          cp sepolicy-inject/sepolicy.new sepolicy.new || true
-          git add patch.log build.log sepolicy.new || true
-          git commit -m "ci result" || true
-          git push -f origin ci-result
+        with:
+          name: sepolicy-patched
+          path: |
+            sepolicy-inject/sepolicy.new
+            sepolicy-inject/patch.log
+            sepolicy-inject/build.log
