@@ -32,14 +32,6 @@ jobs:
           ./sepolicy-inject -s pq -t debug_prop -c property_service -p set -P o4 -o o5
           ./sepolicy-inject -s system_server -t wifi_log_prop -c property_service -p set -P o5 -o sepolicy.new
           ls -l sepolicy.new
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: sepolicy-patched
-          path: |
-            sepolicy-inject/sepolicy.new
-            sepolicy-inject/patch.log
-            sepolicy-inject/build.log
       - name: commit result
         if: always()
         run: |
@@ -50,3 +42,15 @@ jobs:
           git add build.log sepolicy.new || true
           git commit -m "result: sepolicy patch" || true
           git push || true
+      - name: push result branch
+        if: always()
+        run: |
+          git config user.name "ci"
+          git config user.email "ci@localhost"
+          git checkout -b ci-result || git checkout ci-result
+          cp sepolicy-inject/patch.log patch.log || true
+          cp sepolicy-inject/build.log build.log || true
+          cp sepolicy-inject/sepolicy.new sepolicy.new || true
+          git add patch.log build.log sepolicy.new || true
+          git commit -m "ci result" || true
+          git push -f origin ci-result
