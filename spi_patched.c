@@ -126,10 +126,6 @@ void create_domain(char *d, policydb_t *policy) {
 	if(!src)
 		exit(1);
 
-	extern int policydb_index_decls(policydb_t * p);
-	if(policydb_index_decls(policy))
-		exit(1);
-
 	if(policydb_index_classes(policy))
 		exit(1);
 
