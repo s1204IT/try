@@ -1,10 +1,5 @@
 name: patch-sepolicy
 on:
-  push:
-    paths:
-      - sepolicy
-      - spi_patched.c
-      - .github/workflows/patch-sepolicy.yml
   workflow_dispatch:
 jobs:
   patch:
