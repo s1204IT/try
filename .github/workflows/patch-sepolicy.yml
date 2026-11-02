@@ -1,0 +1,35 @@
+name: patch-sepolicy
+on:
+  push:
+    paths:
+      - sepolicy
+      - .github/workflows/patch-sepolicy.yml
+  workflow_dispatch:
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    container: ubuntu:20.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: build tool
+        run: |
+          apt-get update
+          apt-get install -y git build-essential libsepol-dev ca-certificates
+          git clone https://github.com/phhusson/sepolicy-inject.git
+          cd sepolicy-inject
+          make
+      - name: patch
+        run: |
+          cd sepolicy-inject
+          cp ../sepolicy ./sepolicy
+          ./sepolicy-inject -s sn -t media_rw_data_file -c dir -p "read open search" -P sepolicy -o o1
+          ./sepolicy-inject -s init -t mnt_media_rw_file -c dir -p mounton -P o1 -o o2
+          ./sepolicy-inject -s mediaserver -t system_prop -c property_service -p set -P o2 -o o3
+          ./sepolicy-inject -s mediaserver -t debug_prop -c property_service -p set -P o3 -o o4
+          ./sepolicy-inject -s pq -t debug_prop -c property_service -p set -P o4 -o o5
+          ./sepolicy-inject -s system_server -t wifi_log_prop -c property_service -p set -P o5 -o sepolicy.new
+          ls -l sepolicy.new
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sepolicy-patched
+          path: sepolicy-inject/sepolicy.new
