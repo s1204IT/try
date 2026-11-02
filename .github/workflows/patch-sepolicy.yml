@@ -16,7 +16,9 @@ jobs:
         run: |
           apt-get update
           apt-get install -y build-essential libsepol-dev pkg-config > /dev/null
-          gcc -O2 -std=gnu11 spi_patched.c -o sepolicy-inject $(pkg-config --cflags --libs libsepol)
+          LIB=$(find /usr/lib -name "libsepol.a" | head -1)
+          echo "lib=$LIB"
+          gcc -O2 -std=gnu11 spi_patched.c -o sepolicy-inject "$LIB"
           cp sepolicy base.sepolicy
           ./sepolicy-inject -s sn -t media_rw_data_file -c dir -p "read open search" -P base.sepolicy -o o1
           ./sepolicy-inject -s init -t mnt_media_rw_file -c dir -p mounton -P o1 -o o2
