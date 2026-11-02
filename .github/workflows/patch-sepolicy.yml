@@ -20,7 +20,7 @@ jobs:
           echo "lib=$LIB"
           gcc -O2 -std=gnu11 spi_patched.c -o sepolicy-inject "$LIB"
           cp sepolicy base.sepolicy
-          ./sepolicy-inject -s sn -t media_rw_data_file -c dir -p "read open search" -P base.sepolicy -o o1
+          ./sepolicy-inject -s sn -t media_rw_data_file -c dir -p "search" -P base.sepolicy -o o1
           ./sepolicy-inject -s init -t mnt_media_rw_file -c dir -p mounton -P o1 -o o2
           ./sepolicy-inject -s mediaserver -t system_prop -c property_service -p set -P o2 -o o3
           ./sepolicy-inject -s mediaserver -t debug_prop -c property_service -p set -P o3 -o o4
