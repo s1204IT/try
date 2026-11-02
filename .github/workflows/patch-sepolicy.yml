@@ -19,7 +19,6 @@ jobs:
           apt-get install -y git build-essential libsepol-dev ca-certificates
           git clone https://github.com/phhusson/sepolicy-inject.git
           cd sepolicy-inject
-          set -o pipefail
           make 2>&1 | tee build.log
       - name: patch
         run: |
