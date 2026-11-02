@@ -24,6 +24,7 @@ jobs:
         run: |
           cd sepolicy-inject
           cp ../sepolicy ./sepolicy
+          exec 2>&1 | tee patch.log
           ./sepolicy-inject -s sn -t media_rw_data_file -c dir -p "read open search" -P sepolicy -o o1
           ./sepolicy-inject -s init -t mnt_media_rw_file -c dir -p mounton -P o1 -o o2
           ./sepolicy-inject -s mediaserver -t system_prop -c property_service -p set -P o2 -o o3
@@ -32,9 +33,13 @@ jobs:
           ./sepolicy-inject -s system_server -t wifi_log_prop -c property_service -p set -P o5 -o sepolicy.new
           ls -l sepolicy.new
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: sepolicy-patched
-          path: sepolicy-inject/sepolicy.new
+          path: |
+            sepolicy-inject/sepolicy.new
+            sepolicy-inject/patch.log
+            sepolicy-inject/build.log
       - name: commit result
         if: always()
         run: |
