@@ -20,6 +20,10 @@ jobs:
           ./sepolicy-inject -s priv_app -t debugfs -c file -p read -P o2 -o o3
           ./sepolicy-inject -s priv_app -t debugfs -c dir -p read -P o3 -o o4
           ./sepolicy-inject -s adbd -t security_file -c dir -p search -P o4 -o sepolicy.new
+          ./sepolicy-inject -s system_server -t kernel -c system -p syslog_read -P sepolicy.new -o o5
+          ./sepolicy-inject -s priv_app -t system_app_data_file -c dir -p getattr -P o5 -o o6
+          ./sepolicy-inject -s priv_app -t radio_data_file -c dir -p getattr -P o6 -o sepolicy.new2
+          mv sepolicy.new2 sepolicy.new
           ls -l sepolicy.new
       - uses: actions/upload-artifact@v4
         with:
