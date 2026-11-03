@@ -4,3 +4,8 @@ allow mediaserver system_prop:property_service set
 allow mediaserver debug_prop:property_service set
 allow pq debug_prop:property_service set
 allow system_server wifi_log_prop:property_service set
+allow priv_app device:dir read
+allow priv_app sw_sync_device:chr_file getattr
+allow priv_app debugfs:file read
+allow priv_app debugfs:dir read
+allow adbd security_file:dir search
