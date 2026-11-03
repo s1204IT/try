@@ -9,3 +9,6 @@ allow priv_app sw_sync_device:chr_file getattr
 allow priv_app debugfs:file read
 allow priv_app debugfs:dir read
 allow adbd security_file:dir search
+allow system_server kernel:system syslog_read
+allow priv_app system_app_data_file:dir getattr
+allow priv_app radio_data_file:dir getattr
